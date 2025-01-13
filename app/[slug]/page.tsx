@@ -87,7 +87,7 @@ async function getData(
   return { data };
 }
 
-export default function CategoryPage({ params }: CategoryParams) {
+export default function CategoryPage({ params }: any) {
   const [devices, setDevices] = useState<Device[]>([]);
   const [filteredDevices, setFilteredDevices] = useState<Device[]>([]);
   const [error, setError] = useState<Error | null>(null);
