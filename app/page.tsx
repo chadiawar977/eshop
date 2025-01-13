@@ -234,7 +234,7 @@ export default function Home() {
           transition={{ delay: 0.2, duration: 0.8 }}
         >
           <Image
-            src="/main.jpeg"
+            src="/hero.jpg"
             alt="E-Shop Hero"
             layout="fill"
             style={{ borderRadius: "" }}
