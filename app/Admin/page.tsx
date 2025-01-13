@@ -14,6 +14,8 @@ import DeviceList from "@/components/DeviceList";
 import Pagination from "@/components/Pagination";
 import DeviceEditModal from "@/components/DeviceEditModal";
 import AddDevice from "@/components/AddDevice";
+import { useUser } from "@clerk/nextjs";
+import { supabase } from "@/utils/supabase";
 interface Device {
   device_id: number;
   device_name: string;
@@ -27,14 +29,27 @@ interface Device {
 }
 
 export default function AdminPage() {
+  const { user } = useUser();
+  useEffect(() => {
+    let isAdmin = false;
+    const checkAdmin = async () => {
+      const { data } = await supabase
+        .from("users")
+        .select("is_Admin")
+        .eq("user_id", user?.id)
+        .single();
+      isAdmin = data?.is_Admin;
+      if (!isAdmin) return <div>You are not an Admin. Please return.</div>;
+    };
+    checkAdmin();
+  }, [user]);
+  const pageSize = 9;
   const [devices, setDevices] = useState<Device[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [editingDevice, setEditingDevice] = useState<Device | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const pageSize = 9;
 
   useEffect(() => {
     fetchDevices();

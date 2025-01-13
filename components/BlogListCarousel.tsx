@@ -117,7 +117,7 @@ const BlogListCarousel = () => {
                   >
                     {post.Description}
                   </Typography>
-                  <Link href={`/blog/${post.id}`}>
+                  <Link href={`/blog?id=${post.id}`}>
                     <Button size="small" sx={{ mt: 1 }}>
                       Read More
                     </Button>
