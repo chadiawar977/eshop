@@ -266,6 +266,19 @@ export default function CartPage() {
     }
   };
 
+  if (!user)
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        minHeight="100vh" // Optional: Center vertically on the whole page
+      >
+        <Typography variant="h5" align="center" color="primary">
+          Please Sign in to access your Cart
+        </Typography>
+      </Box>
+    );
   if (isLoading) {
     return (
       <Container sx={{ display: "flex", justifyContent: "center", py: 8 }}>
@@ -278,7 +291,7 @@ export default function CartPage() {
     (sum, item) => sum + item.price * item.count,
     0
   );
- 
+
   return (
     <Container maxWidth="lg" sx={{ py: 8 }}>
       <Typography

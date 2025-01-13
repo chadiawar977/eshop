@@ -182,8 +182,8 @@ export default function CategoryPage({ params }: any) {
     page: number
   ) => {
     setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
-
   if (error) {
     return (
       <Container maxWidth="lg" sx={{ py: 8 }}>
