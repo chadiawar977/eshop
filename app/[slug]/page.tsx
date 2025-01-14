@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { supabase } from "@/utils/supabase";
@@ -133,11 +133,14 @@ export default function CategoryPage({ params }: any) {
     fetchData();
   }, [params.slug, minPrice, maxPrice, selectedBrands, searchQuery]);
 
-  // Calculate pagination
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = filteredDevices.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(filteredDevices.length / itemsPerPage);
+  // Use useMemo to calculate pagination values
+  const { currentItems, totalPages } = useMemo(() => {
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const current = filteredDevices.slice(indexOfFirstItem, indexOfLastItem);
+    const total = Math.ceil(filteredDevices.length / itemsPerPage);
+    return { currentItems: current, totalPages: total };
+  }, [filteredDevices, currentPage, itemsPerPage]);
 
   const handleFilterChange = (
     brands: string[],
@@ -147,7 +150,8 @@ export default function CategoryPage({ params }: any) {
     setSelectedBrands(brands.length > 0 ? brands : null);
     setMinPrice(newMinPrice || null);
     setMaxPrice(newMaxPrice || null);
-    setCurrentPage(1); // Reset to first page when filters change
+
+    // setCurrentPage(1); // Reset to first page when filters change
   };
 
   const handleSearch = useCallback((query: string) => {

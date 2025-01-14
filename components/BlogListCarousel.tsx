@@ -50,8 +50,9 @@ const BlogListCarousel = () => {
 
   const handleNext = () => {
     if (containerRef.current) {
-      const cardWidth = containerRef.current.children[0].offsetWidth + 16;
-      const newIndex = Math.min(currentIndex + 4, blogPosts.length - 4);
+      const cardWidth = containerRef.current.children[0].offsetWidth + 16; // Calculate width of a single card including margin
+      // Change to show 3 items
+      const newIndex = Math.min(currentIndex + 3, blogPosts.length - 3);
       containerRef.current.scrollLeft += (newIndex - currentIndex) * cardWidth;
       setCurrentIndex(newIndex);
     }
@@ -60,7 +61,8 @@ const BlogListCarousel = () => {
   const handlePrev = () => {
     if (containerRef.current) {
       const cardWidth = containerRef.current.children[0].offsetWidth + 16;
-      const newIndex = Math.max(currentIndex - 4, 0);
+      // Change to show 3 items
+      const newIndex = Math.max(currentIndex - 3, 0);
       containerRef.current.scrollLeft -= (currentIndex - newIndex) * cardWidth;
       setCurrentIndex(newIndex);
     }
@@ -95,12 +97,19 @@ const BlogListCarousel = () => {
             blogPosts.map((post: any) => (
               <Card
                 key={post.id}
-                sx={{ minWidth: 275, maxWidth: 300, mx: 2, flexShrink: 0 }}
+                // Adjust card size here
+                sx={{
+                  minWidth: 350, // Increased from 275
+                  maxWidth: 400, // Increased from 300
+                  mx: 2,
+                  flexShrink: 0,
+                  height: 350,
+                }}
               >
                 {post.Image && (
                   <CardMedia
                     component="img"
-                    height="140"
+                    height="194" // Increased height
                     image={post.Image}
                     alt={post.Description}
                   />
@@ -109,8 +118,9 @@ const BlogListCarousel = () => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
+                    // Adjust height for larger card
                     sx={{
-                      height: 60,
+                      height: 80, // Increased from 60
                       overflow: "hidden",
                       textOverflow: "ellipsis",
                     }}
@@ -128,7 +138,8 @@ const BlogListCarousel = () => {
         </Box>
         <IconButton
           onClick={handleNext}
-          disabled={currentIndex >= blogPosts.length - 4 || loading}
+          // Change to show 3 items
+          disabled={currentIndex >= blogPosts.length - 3 || loading}
         >
           <ArrowRightIcon />
         </IconButton>
