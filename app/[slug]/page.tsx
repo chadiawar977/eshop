@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useUser } from "@clerk/nextjs";
 import { supabase } from "@/utils/supabase";
 import { AddToCart } from "@/functions/AddToCart";
+import { useNumber } from "../context/CartContext";
 import {
   Card,
   CardContent,
@@ -106,6 +107,7 @@ export default function CategoryPage({ params }: any) {
     severity: "success" as "success" | "error",
   });
   const { user } = useUser();
+  const { setNumber, number } = useNumber();
 
   // Fetch data when filters, category, or search changes
   useEffect(() => {
@@ -164,6 +166,20 @@ export default function CategoryPage({ params }: any) {
       setAddingToCart(deviceId);
       const result = await AddToCart(deviceId, user.id, params.slug);
       setAddingToCart(null);
+
+        const { data: cartData, error: cartError } = await supabase
+          .from("users")
+          .select("cart")
+          .eq("user_id", user?.id)
+          .single();
+
+        if (cartError) {
+          console.error(cartError);
+        } else {
+          const num = cartData?.cart.length;
+          console.log(num);
+          setNumber(num);
+        }
 
       setSnackbar({
         open: true,

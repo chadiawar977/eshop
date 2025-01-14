@@ -20,7 +20,7 @@ export async function UpdateStock(devices: DeviceUpdate[] | DeviceUpdate) {
       }
 
       // Calculate new stock quantity
-      const newStockQuantity = stock_quantity - count - 1;
+      const newStockQuantity = stock_quantity - count;
 
       if (newStockQuantity < 0) {
         throw new Error(`Insufficient stock for device ID ${device_id}`);

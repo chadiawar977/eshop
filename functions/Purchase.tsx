@@ -2,6 +2,7 @@ import React from "react";
 import { supabase } from "../utils/supabase";
 import { ClearCart } from "./ClearCart";
 import { revalidatePath } from "next/cache";
+import { useNumber } from "@/app/context/CartContext";
 export async function Purchase(user_id: any) {
   try {
     // Fetch the current user's cart and purchased items
