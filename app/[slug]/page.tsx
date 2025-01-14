@@ -26,6 +26,7 @@ import { styled } from "@mui/material/styles";
 import FilterComponent from "@/components/Filter";
 import Pagination from "@/components/Pagination";
 import SearchBar from "@/components/SearchBar";
+import { set } from "lodash";
 
 // Types remain the same
 type Device = {
@@ -101,6 +102,7 @@ export default function CategoryPage({ params }: any) {
   const [itemsPerPage] = useState(9);
   const [searchQuery, setSearchQuery] = useState("");
   const cat = params.slug.charAt(0).toUpperCase() + params.slug.slice(1);
+  const [selectedAttr, setSelectAttr] = useState<any[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -141,6 +143,7 @@ export default function CategoryPage({ params }: any) {
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     const current = filteredDevices.slice(indexOfFirstItem, indexOfLastItem);
     const total = Math.ceil(filteredDevices.length / itemsPerPage);
+
     return { currentItems: current, totalPages: total };
   }, [filteredDevices, currentPage, itemsPerPage]);
 
@@ -167,19 +170,19 @@ export default function CategoryPage({ params }: any) {
       const result = await AddToCart(deviceId, user.id, params.slug);
       setAddingToCart(null);
 
-        const { data: cartData, error: cartError } = await supabase
-          .from("users")
-          .select("cart")
-          .eq("user_id", user?.id)
-          .single();
+      const { data: cartData, error: cartError } = await supabase
+        .from("users")
+        .select("cart")
+        .eq("user_id", user?.id)
+        .single();
 
-        if (cartError) {
-          console.error(cartError);
-        } else {
-          const num = cartData?.cart.length;
-          console.log(num);
-          setNumber(num);
-        }
+      if (cartError) {
+        console.error(cartError);
+      } else {
+        const num = cartData?.cart.length;
+        console.log(num);
+        setNumber(num);
+      }
 
       setSnackbar({
         open: true,
@@ -196,7 +199,9 @@ export default function CategoryPage({ params }: any) {
       });
     }
   };
-
+  function handleAttribute(attr: any) {
+    setSelectAttr([...selectedAttr, attr]);
+  }
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     page: number
@@ -248,6 +253,19 @@ export default function CategoryPage({ params }: any) {
         >
           {decodeURIComponent(params.slug)} Devices
         </Typography>
+        <Container>
+          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+            {selectedAttr?.map((attr, index) => (
+              <StyledChip
+                key={index}
+                label={attr}
+                size="small"
+                variant="outlined"
+                onClick={() => handleAttribute(attr)}
+              />
+            ))}
+          </Box>
+        </Container>
         {currentItems.length === 0 ? (
           <Typography variant="h5" gutterBottom>
             No devices found with the selected filters
@@ -294,6 +312,7 @@ export default function CategoryPage({ params }: any) {
                           label={attr}
                           size="small"
                           variant="outlined"
+                          onClick={() => handleAttribute(attr)}
                         />
                       ))}
                     </Box>

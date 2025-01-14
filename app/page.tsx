@@ -120,7 +120,7 @@ export default function Home() {
       window.pageYOffset || document.documentElement.scrollTop;
 
     // Calculate the target scroll position (e.g., 200 pixels down)
-    const targetScroll = currentScroll + 400;
+    const targetScroll = currentScroll + 1000;
 
     // Smoothly scroll to the target position
     window.scrollTo({
