@@ -62,8 +62,8 @@ export default function FilterComponent({
   useEffect(() => {
     async function fetchRange() {
       const result = await getRange(cat);
-      setmin(result[0].min_price);
-      setmax(result[0].max_price);
+      setmin(result[0]?.min_price);
+      setmax(result[0]?.max_price);
     }
     fetchRange();
   }, [cat]);
