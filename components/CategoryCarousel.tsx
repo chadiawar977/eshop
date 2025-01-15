@@ -11,8 +11,9 @@ import {
   CircularProgress,
   styled,
 } from "@mui/material";
-import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import DeviceModal from "./DeviceModal"; // Adjust the import path as needed
+import { ChevronRight } from "@mui/icons-material";
+import DeviceModal from "./DeviceModal";
+import Link from "next/link";
 
 interface CategoryCarouselProps {
   categoryName: string;
@@ -33,11 +34,10 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
   categoryName,
 }) => {
   const [devices, setDevices] = useState<any[]>([]);
-  const [startIndex, setStartIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedDeviceId, setSelectedDeviceId] = useState<number | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const slidesToShow = 4;
+  const slidesToShow = 5;
 
   useEffect(() => {
     const fetchDevicesByCategory = async () => {
@@ -75,22 +75,7 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
     setSelectedDeviceId(null);
   };
 
-  const nextSlide = () => {
-    setStartIndex((startIndex + slidesToShow) % devices.length);
-  };
-
-  const prevSlide = () => {
-    setStartIndex(
-      (startIndex - slidesToShow + devices.length) % devices.length
-    );
-  };
-
-  let currentDevices = devices.slice(startIndex, startIndex + slidesToShow);
-
-  if (currentDevices.length < slidesToShow && devices.length > 0) {
-    const remaining = slidesToShow - currentDevices.length;
-    currentDevices = [...currentDevices, ...devices.slice(0, remaining)];
-  }
+  const currentDevices = devices.slice(0, slidesToShow);
 
   if (loading) {
     return (
@@ -108,84 +93,69 @@ const CategoryCarousel: React.FC<CategoryCarouselProps> = ({
   return (
     <>
       <Box padding={4}>
-        <Typography variant="h4" component="h2" gutterBottom>
-          {categoryName}
-        </Typography>
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          marginBottom={2}
+        >
+          <Typography variant="h4" component="h2">
+            {categoryName}
+          </Typography>
+        </Box>
 
-        <Box display="flex" alignItems="center">
-          <IconButton
-            onClick={prevSlide}
-            aria-label="Previous"
-            disabled={devices.length <= slidesToShow}
-            sx={{
-              "&.Mui-disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronLeft />
-          </IconButton>
-
-          <Box flexGrow={1}>
-            <Grid container spacing={2} justifyContent="center">
-              {currentDevices.map((device) => (
-                <Grid item key={device.device_id} xs={12} sm={6} md={3}>
-                  <StyledCard onClick={() => handleOpenModal(device.device_id)}>
-                    <CardMedia
-                      component="img"
-                      height="140"
-                      image={device.Image}
-                      alt={device.device_name}
+        <Box>
+          <Grid container spacing={2} justifyContent="space-between">
+            {currentDevices.map((device) => (
+              <Grid item key={device.device_id} xs={12} sm={6} md={2.4}>
+                <StyledCard onClick={() => handleOpenModal(device.device_id)}>
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={device.Image}
+                    alt={device.device_name}
+                    sx={{
+                      objectFit: "cover",
+                    }}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography
+                      gutterBottom
+                      variant="h6"
+                      component="div"
                       sx={{
-                        objectFit: "cover",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        display: "-webkit-box",
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: "vertical",
+                        lineHeight: 1.2,
+                        height: "2.4em",
                       }}
-                    />
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography
-                        gutterBottom
-                        variant="h6"
-                        component="div"
-                        sx={{
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          lineHeight: 1.2,
-                          height: "2.4em",
-                        }}
-                      >
-                        {device.device_name}
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontWeight: "medium" }}
-                      >
-                        ${device.price.toFixed(2)}
-                      </Typography>
-                    </CardContent>
-                  </StyledCard>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-
-          <IconButton
-            onClick={nextSlide}
-            aria-label="Next"
-            disabled={devices.length <= slidesToShow}
-            sx={{
-              "&.Mui-disabled": {
-                opacity: 0.3,
-              },
-            }}
-          >
-            <ChevronRight />
-          </IconButton>
+                    >
+                      {device.device_name}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontWeight: "medium" }}
+                    >
+                      ${device.price.toFixed(2)}
+                    </Typography>
+                  </CardContent>
+                </StyledCard>
+              </Grid>
+            ))}
+          </Grid>
+        </Box>
+        <Box display="flex" justifyContent="flex-end" mt={2}>
+          <Link href={`/${categoryName}`} passHref>
+            <IconButton color="primary" aria-label="See More">
+              <ChevronRight />
+            </IconButton>
+          </Link>
         </Box>
       </Box>
-
       <DeviceModal
         open={modalOpen}
         onClose={handleCloseModal}

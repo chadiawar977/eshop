@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   IconButton,
-  Grid,
   Card,
   CardMedia,
   CardContent,
@@ -20,6 +19,7 @@ const FeaturedDevices = () => {
   const [selectedDevice, setSelectedDevice] = useState<any>(null);
   const slidesToShow = 4;
   const [startIndex, setStartIndex] = useState(0);
+  const [showLeftArrow, setShowLeftArrow] = useState(false);
 
   useEffect(() => {
     const fetchFeaturedDevices = async () => {
@@ -30,7 +30,7 @@ const FeaturedDevices = () => {
           .select("*")
           .gt("stock_quantity", 0)
           .order("stock_quantity", { ascending: false })
-          .limit(10);
+          .limit(20);
 
         if (error) throw error;
         setDevices(data || []);
@@ -45,13 +45,22 @@ const FeaturedDevices = () => {
   }, []);
 
   const nextSlide = () => {
-    setStartIndex((startIndex + slidesToShow) % devices.length);
+    setStartIndex((prevIndex) => {
+      const newIndex = Math.min(
+        prevIndex + slidesToShow,
+        devices.length - slidesToShow
+      );
+      setShowLeftArrow(true);
+      return newIndex;
+    });
   };
 
   const prevSlide = () => {
-    setStartIndex(
-      (startIndex - slidesToShow + devices.length) % devices.length
-    );
+    setStartIndex((prevIndex) => {
+      const newIndex = Math.max(prevIndex - slidesToShow, 0);
+      setShowLeftArrow(newIndex > 0);
+      return newIndex;
+    });
   };
 
   const handleOpenModal = (device: any) => {
@@ -63,14 +72,6 @@ const FeaturedDevices = () => {
     setModalOpen(false);
     setSelectedDevice(null);
   };
-
-  let currentDevices = devices.slice(startIndex, startIndex + slidesToShow);
-
-  // Handle cases where there are fewer devices than slidesToShow
-  if (currentDevices.length < slidesToShow && devices.length > 0) {
-    const remaining = slidesToShow - currentDevices.length;
-    currentDevices = [...currentDevices, ...devices.slice(0, remaining)];
-  }
 
   if (loading) {
     return (
@@ -85,6 +86,8 @@ const FeaturedDevices = () => {
     );
   }
 
+  const visibleDevices = devices.slice(startIndex, startIndex + slidesToShow);
+
   return (
     <Box padding={4}>
       <Typography variant="h4" component="h2" gutterBottom>
@@ -92,18 +95,30 @@ const FeaturedDevices = () => {
       </Typography>
 
       <Box display="flex" alignItems="center">
-        <IconButton
-          onClick={prevSlide}
-          aria-label="Previous"
-          disabled={devices.length <= slidesToShow}
-        >
-          <ChevronLeft />
-        </IconButton>
+        {showLeftArrow && (
+          <IconButton
+            onClick={prevSlide}
+            aria-label="Previous"
+            disabled={startIndex === 0}
+          >
+            <ChevronLeft />
+          </IconButton>
+        )}
 
-        <Box flexGrow={1}>
-          <Grid container spacing={2} justifyContent="center">
-            {currentDevices.map((device) => (
-              <Grid item key={device.device_id} xs={12} sm={6} md={3}>
+        <Box flexGrow={1} overflow="hidden">
+          <Box
+            display="flex"
+            sx={{
+              transition: "transform 0.3s ease-in-out",
+            }}
+          >
+            {visibleDevices.map((device) => (
+              <Box
+                key={device.device_id}
+                width={`${100 / slidesToShow}%`}
+                padding={1}
+                flexShrink={0}
+              >
                 <Card
                   sx={{
                     height: "100%",
@@ -131,21 +146,20 @@ const FeaturedDevices = () => {
                     </Typography>
                   </CardContent>
                 </Card>
-              </Grid>
+              </Box>
             ))}
-          </Grid>
+          </Box>
         </Box>
 
         <IconButton
           onClick={nextSlide}
           aria-label="Next"
-          disabled={devices.length <= slidesToShow}
+          disabled={startIndex >= devices.length - slidesToShow}
         >
           <ChevronRight />
         </IconButton>
       </Box>
 
-      {/* Render the DeviceModal component */}
       <DeviceModal
         open={modalOpen}
         device_id={selectedDevice}
