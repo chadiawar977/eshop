@@ -33,6 +33,7 @@ import {
 import { supabase } from "../utils/supabase";
 import { template } from "lodash";
 import { useNumber } from "./context/CartContext";
+import Footer from "../components/Footer";
 const DEVICE_CATEGORIES = [
   "Smartphones",
   "Laptops",
@@ -350,6 +351,7 @@ export default function RootLayout({
 
               {children}
             </Box>
+            <Footer />
           </body>
         </html>
       </NumberProvider>
