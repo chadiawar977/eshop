@@ -6,6 +6,7 @@ import { useUser } from "@clerk/nextjs";
 import { supabase } from "@/utils/supabase";
 import { AddToCart } from "@/functions/AddToCart";
 import { useNumber } from "../context/CartContext";
+import CancelIcon from "@mui/icons-material/Cancel";
 import {
   Card,
   CardContent,
@@ -49,6 +50,7 @@ type CategoryParams = {
   p_max_price?: number | null;
   p_brand?: string[] | null;
   p_device_name?: string | null;
+  p_attributes?: string[] | null;
 };
 
 // Styled components remain the same
@@ -71,15 +73,17 @@ async function getData(
   minPrice: number | null,
   maxPrice: number | null,
   brands: string[] | null,
+  attributes: string[] | null,
   searchQuery: string | null
 ) {
   const cat = slug.charAt(0).toUpperCase() + slug.slice(1);
 
-  const { data, error } = await supabase.rpc("filter", {
+  const { data, error } = await supabase.rpc("search", {
     p_category: cat,
     p_min_price: minPrice,
     p_max_price: maxPrice,
     p_brands: brands,
+    p_attributes: attributes,
     p_search: searchQuery, // Add search parameter to the RPC call
   });
 
@@ -98,6 +102,7 @@ export default function CategoryPage({ params }: any) {
   const [minPrice, setMinPrice] = useState<number | null>(null);
   const [maxPrice, setMaxPrice] = useState<number | null>(null);
   const [selectedBrands, setSelectedBrands] = useState<string[] | null>(null);
+  const [brandsCopy, setCopy] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage] = useState(9);
   const [searchQuery, setSearchQuery] = useState("");
@@ -121,6 +126,7 @@ export default function CategoryPage({ params }: any) {
           minPrice,
           maxPrice,
           selectedBrands,
+          selectedAttr,
           searchQuery || null
         );
         setDevices(data || []);
@@ -135,7 +141,14 @@ export default function CategoryPage({ params }: any) {
     };
 
     fetchData();
-  }, [params.slug, minPrice, maxPrice, selectedBrands, searchQuery]);
+  }, [
+    params.slug,
+    minPrice,
+    maxPrice,
+    selectedBrands,
+    searchQuery,
+    selectedAttr,
+  ]);
 
   // Use useMemo to calculate pagination values
   const { currentItems, totalPages } = useMemo(() => {
@@ -158,6 +171,14 @@ export default function CategoryPage({ params }: any) {
 
     // setCurrentPage(1); // Reset to first page when filters change
   };
+  function handleBrand(brand: string) {
+    // Using string type for clarity
+    if (!selectedBrands?.includes(brand) && !brandsCopy?.includes(brand)) {
+      setCopy([...brandsCopy, brand]);
+      setSelectedBrands(brandsCopy);
+    } else {
+    }
+  }
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -200,8 +221,16 @@ export default function CategoryPage({ params }: any) {
     }
   };
   function handleAttribute(attr: any) {
-    setSelectAttr([...selectedAttr, attr]);
+    if (!selectedAttr.includes(attr)) {
+      setSelectAttr([...selectedAttr, attr]);
+    } else {
+      DeleteAttr(attr);
+    }
   }
+  function DeleteAttr(attr: any) {
+    setSelectAttr(selectedAttr.filter((item) => item !== attr));
+  }
+
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     page: number
@@ -253,15 +282,17 @@ export default function CategoryPage({ params }: any) {
         >
           {decodeURIComponent(params.slug)} Devices
         </Typography>
-        <Container>
+        <Container sx={{ mb: 3 }}>
           <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
             {selectedAttr?.map((attr, index) => (
               <StyledChip
                 key={index}
                 label={attr}
                 size="small"
-                variant="outlined"
-                onClick={() => handleAttribute(attr)}
+                variant="filled" // Use filled variant for background color
+                color="success"
+                onDelete={() => DeleteAttr(attr)} // Use onDelete to handle removal
+                deleteIcon={<CancelIcon fontSize="small" />} // Customize delete icon
               />
             ))}
           </Box>
@@ -297,14 +328,8 @@ export default function CategoryPage({ params }: any) {
                       color="primary"
                       variant="outlined"
                       sx={{ mb: 2 }}
+                      // onClick={() => handleBrand(device.brand)}
                     />
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      paragraph
-                    >
-                      {device.description}
-                    </Typography>
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {device.Attributes?.map((attr, index) => (
                         <StyledChip
@@ -316,6 +341,13 @@ export default function CategoryPage({ params }: any) {
                         />
                       ))}
                     </Box>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      paragraph
+                    >
+                      {device.description}
+                    </Typography>
                   </CardContent>
                   <CardActions sx={{ p: 2, pt: 0 }}>
                     <Box sx={{ width: "100%" }}>
@@ -393,4 +425,7 @@ export default function CategoryPage({ params }: any) {
       </Container>
     </div>
   );
+}
+function $$(arg0: boolean) {
+  throw new Error("Function not implemented.");
 }

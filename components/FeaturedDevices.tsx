@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../utils/supabase";
-import Link from "next/link";
 import {
   Box,
   Typography,
@@ -12,13 +11,16 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
+import DeviceModal from "./DeviceModal";
 
 const FeaturedDevices = () => {
-  const [devices, setDevices] = useState<any>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [devices, setDevices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const slidesToShow = 4; // Number of slides to show at a time
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedDevice, setSelectedDevice] = useState<any>(null);
+  const slidesToShow = 4;
   const [startIndex, setStartIndex] = useState(0);
+
   useEffect(() => {
     const fetchFeaturedDevices = async () => {
       try {
@@ -26,15 +28,14 @@ const FeaturedDevices = () => {
         const { data, error } = await supabase
           .from("devices")
           .select("*")
-          .gt("stock_quantity", 0) // Only get devices with stock
+          .gt("stock_quantity", 0)
           .order("stock_quantity", { ascending: false })
           .limit(10);
 
         if (error) throw error;
-        setDevices(data);
+        setDevices(data || []);
       } catch (error) {
         console.error("Error fetching devices:", error);
-        // Handle error (e.g., display an error message to the user)
       } finally {
         setLoading(false);
       }
@@ -53,13 +54,24 @@ const FeaturedDevices = () => {
     );
   };
 
-  const currentDevices = devices.slice(startIndex, startIndex + slidesToShow);
+  const handleOpenModal = (device: any) => {
+    setSelectedDevice(device);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedDevice(null);
+  };
+
+  let currentDevices = devices.slice(startIndex, startIndex + slidesToShow);
 
   // Handle cases where there are fewer devices than slidesToShow
   if (currentDevices.length < slidesToShow && devices.length > 0) {
     const remaining = slidesToShow - currentDevices.length;
-    currentDevices.push(...devices.slice(0, remaining));
+    currentDevices = [...currentDevices, ...devices.slice(0, remaining)];
   }
+
   if (loading) {
     return (
       <Box
@@ -90,34 +102,35 @@ const FeaturedDevices = () => {
 
         <Box flexGrow={1}>
           <Grid container spacing={2} justifyContent="center">
-            {currentDevices.map((device: any) => (
+            {currentDevices.map((device) => (
               <Grid item key={device.device_id} xs={12} sm={6} md={3}>
-                <Link href={`/${device.category_name}`} passHref>
-                  <Card
-                    component="a"
-                    sx={{
-                      textDecoration: "none",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                    }}
-                  >
-                    <CardMedia
-                      component="img"
-                      height="140"
-                      image={device.Image}
-                      alt={device.device_name}
-                    />
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Typography gutterBottom variant="h5" component="div">
-                        {device.device_name}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Price: ${device.price}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Link>
+                <Card
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    cursor: "pointer",
+                    "&:hover": {
+                      boxShadow: 3,
+                    },
+                  }}
+                  onClick={() => handleOpenModal(device.device_id)}
+                >
+                  <CardMedia
+                    component="img"
+                    height="140"
+                    image={device.Image}
+                    alt={device.device_name}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography gutterBottom variant="h5" component="div">
+                      {device.device_name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Price: ${device.price}
+                    </Typography>
+                  </CardContent>
+                </Card>
               </Grid>
             ))}
           </Grid>
@@ -131,7 +144,15 @@ const FeaturedDevices = () => {
           <ChevronRight />
         </IconButton>
       </Box>
+
+      {/* Render the DeviceModal component */}
+      <DeviceModal
+        open={modalOpen}
+        device_id={selectedDevice}
+        onClose={handleCloseModal}
+      />
     </Box>
   );
 };
+
 export default FeaturedDevices;
